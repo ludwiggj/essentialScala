@@ -1,4 +1,4 @@
-package chapters.ex_4_7_0_1.polymorhic
+package chapters.ex_4_7_0_1.calculator.advanced.generalised
 
 /*
 We’re now going to work on a larger problem to implement a simple interpreter for programs containing only numeric
@@ -33,13 +33,22 @@ assert(Division(Number(4), Number(0).eval == Failure("Division by zero"))
  */
 
 sealed trait Expression {
-  def eval: Calculation
+  def eval: Calculation = {
+    this match {
+      case Number(value: Double) => Success(value)
 
-  def eval2ArgOp(a: Expression, b: Expression, op: (Double, Double) => Calculation) = {
-    (a.eval, b.eval) match {
-      case ((y: Success, z: Success)) => op(y.value, z.value)
-      case ((f: Failure, _)) => f
-      case ((_, f: Failure)) => f
+      case Addition(left: Expression, right: Expression) =>
+        eval2ArgOp(left, right, (a: Double, b: Double) => Success(a + b))
+
+      case Subtraction(left: Expression, right: Expression) =>
+        eval2ArgOp(left, right, (a: Double, b: Double) => Success(a - b))
+
+      case Division(left: Expression, right: Expression) =>
+        eval2ArgOp(left, right, (a: Double, b: Double) => if (b == 0) Failure("Division by zero") else Success(a / b))
+
+      case SquareRoot(value: Expression) =>
+        evalSingleArgOp(value, (a: Double) =>
+          if (a < 0) Failure("Square root of negative number") else Success(Math.sqrt(a)))
     }
   }
 
@@ -49,39 +58,25 @@ sealed trait Expression {
       case (f: Failure) => f
     }
   }
-}
 
-final case class Number(value: Double) extends Expression {
-  def eval: Calculation = Success(value)
-}
-
-final case class Addition(left: Expression, right: Expression) extends Expression {
-  def eval: Calculation = {
-    def add(a: Double, b: Double) = Success(a + b)
-    eval2ArgOp(left, right, add)
+  def eval2ArgOp(a: Expression, b: Expression, op: (Double, Double) => Calculation) = {
+    (a.eval, b.eval) match {
+      case (y: Success, z: Success) => op(y.value, z.value)
+      case (f: Failure, _) => f
+      case (_, f: Failure) => f
+    }
   }
 }
 
-final case class Subtraction(left: Expression, right: Expression) extends Expression {
-  def eval: Calculation = {
-    def subtract(a: Double, b: Double) = Success(a - b)
-    eval2ArgOp(left, right, subtract)
-  }
-}
+final case class Number(value: Double) extends Expression
 
-final case class Division(numerator: Expression, denominator: Expression) extends Expression {
-  def eval: Calculation = {
-    def divide(a: Double, b: Double) = if (b == 0) Failure("Division by zero") else Success(a / b)
-    eval2ArgOp(numerator, denominator, divide)
-  }
-}
+final case class Addition(left: Expression, right: Expression) extends Expression
 
-final case class SquareRoot(value: Expression) extends Expression {
-  def eval: Calculation = {
-    def sqrRoot(a: Double) = if (a < 0) Failure("Square root of negative number") else Success(Math.sqrt(a))
-    evalSingleArgOp(value, sqrRoot)
-  }
-}
+final case class Subtraction(left: Expression, right: Expression) extends Expression
+
+final case class Division(numerator: Expression, denominator: Expression) extends Expression
+
+final case class SquareRoot(value: Expression) extends Expression
 
 sealed trait Calculation
 
@@ -89,7 +84,7 @@ final case class Success(value: Double) extends Calculation
 
 final case class Failure(reason: String) extends Calculation
 
-object Calculator extends App {
+object GeneralisedCalculator extends App {
   assert(Number(1.0).eval == Success(1.0))
   assert(Addition(Number(1.0), Number(2.4)).eval == Success(3.4))
   assert(Subtraction(Number(1.0), Number(2.4)).eval == Success(-1.4))

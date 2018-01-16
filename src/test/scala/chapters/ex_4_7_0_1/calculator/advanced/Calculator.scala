@@ -1,4 +1,4 @@
-package chapters.ex_4_7_0_1.patternMatching
+package chapters.ex_4_7_0_1.calculator.advanced
 
 /*
 We’re now going to work on a larger problem to implement a simple interpreter for programs containing only numeric
@@ -36,34 +36,25 @@ sealed trait Expression {
   def eval: Calculation = {
     this match {
       case Number(value: Double) => Success(value)
-
-      case Addition(left: Expression, right: Expression) =>
-        eval2ArgOp(left, right, (a: Double, b: Double) => Success(a + b))
-
-      case Subtraction(left: Expression, right: Expression) =>
-        eval2ArgOp(left, right, (a: Double, b: Double) => Success(a - b))
-
-      case Division(left: Expression, right: Expression) =>
-        eval2ArgOp(left, right, (a: Double, b: Double) => if (b == 0) Failure("Division by zero") else Success(a / b))
-
-      case SquareRoot(value: Expression) =>
-        evalSingleArgOp(value, (a: Double) =>
-          if (a < 0) Failure("Square root of negative number") else Success(Math.sqrt(a)))
-    }
-  }
-
-  def evalSingleArgOp(a: Expression, op: (Double) => Calculation) = {
-    (a.eval) match {
-      case (z: Success) => op(z.value)
-      case (f: Failure) => f
-    }
-  }
-
-  def eval2ArgOp(a: Expression, b: Expression, op: (Double, Double) => Calculation) = {
-    (a.eval, b.eval) match {
-      case (y: Success, z: Success) => op(y.value, z.value)
-      case (f: Failure, _) => f
-      case (_, f: Failure) => f
+      case Addition(left: Expression, right: Expression) => (left.eval, right.eval) match {
+        case (Success(l_val), Success(r_val)) => Success(l_val + r_val)
+        case (Failure(reason), _) => Failure(reason)
+        case (_, Failure(reason)) => Failure(reason)
+      }
+      case Subtraction(left: Expression, right: Expression) => (left.eval, right.eval) match {
+        case (Success(l_val), Success(r_val)) => Success(l_val - r_val)
+        case (Failure(reason), _) => Failure(reason)
+        case (_, Failure(reason)) => Failure(reason)
+      }
+      case SquareRoot(value: Expression) => value.eval match {
+        case Success(v) => if (v >= 0.0) Success(Math.sqrt(v)) else Failure("Square root of negative number")
+        case f: Failure => f
+      }
+      case Division(left: Expression, right: Expression) => (left.eval, right.eval) match {
+        case (Success(nom), Success(denom)) => if (denom == 0) Failure("Division by zero") else Success(nom / denom)
+        case (Failure(reason), _) => Failure(reason)
+        case (_, Failure(reason)) => Failure(reason)
+      }
     }
   }
 }
@@ -88,9 +79,34 @@ object Calculator extends App {
   assert(Number(1.0).eval == Success(1.0))
   assert(Addition(Number(1.0), Number(2.4)).eval == Success(3.4))
   assert(Subtraction(Number(1.0), Number(2.4)).eval == Success(-1.4))
-  assert(Division(Number(1.0), Number(2.0)).eval == Success(0.5))
   assert(SquareRoot(Number(9.0)).eval == Success(3.0))
   assert(Addition(SquareRoot(Number(-1.0)), Number(2.0)).eval == Failure("Square root of negative number"))
   assert(Addition(SquareRoot(Number(4.0)), Number(2.0)).eval == Success(4.0))
+  assert(Division(Number(1.0), Number(2.0)).eval == Success(0.5))
   assert(Division(Number(4), Number(0)).eval == Failure("Division by zero"))
 }
+
+// Success(value)
+// eval2ArgOp(left, right, (a: Double, b: Double) => Success(a + b))
+//        eval2ArgOp(left, right, (a: Double, b: Double) => Success(a - b))
+
+//      case Division(left: Expression, right: Expression) =>
+//        eval2ArgOp(left, right, (a: Double, b: Double) => if (b == 0) Failure("Division by zero") else Success(a / b))
+//
+//      case SquareRoot(value: Expression) =>
+//        evalSingleArgOp(value, (a: Double) =>
+//          if (a < 0) Failure("Square root of negative number") else Success(Math.sqrt(a)))
+//  def evalSingleArgOp(a: Expression, op: (Double) => Calculation) = {
+//    (a.eval) match {
+//      case (z: Success) => op(z.value)
+//      case (f: Failure) => f
+//    }
+//  }
+
+//  def eval2ArgOp(a: Expression, b: Expression, op: (Double, Double) => Calculation) = {
+//    (a.eval, b.eval) match {
+//      case (y: Success, z: Success) => op(y.value, z.value)
+//      case (f: Failure, _) => f
+//      case (_, f: Failure) => f
+//    }
+//  }
