@@ -85,28 +85,3 @@ object Calculator extends App {
   assert(Division(Number(1.0), Number(2.0)).eval == Success(0.5))
   assert(Division(Number(4), Number(0)).eval == Failure("Division by zero"))
 }
-
-// Success(value)
-// eval2ArgOp(left, right, (a: Double, b: Double) => Success(a + b))
-//        eval2ArgOp(left, right, (a: Double, b: Double) => Success(a - b))
-
-//      case Division(left: Expression, right: Expression) =>
-//        eval2ArgOp(left, right, (a: Double, b: Double) => if (b == 0) Failure("Division by zero") else Success(a / b))
-//
-//      case SquareRoot(value: Expression) =>
-//        evalSingleArgOp(value, (a: Double) =>
-//          if (a < 0) Failure("Square root of negative number") else Success(Math.sqrt(a)))
-//  def evalSingleArgOp(a: Expression, op: (Double) => Calculation) = {
-//    (a.eval) match {
-//      case (z: Success) => op(z.value)
-//      case (f: Failure) => f
-//    }
-//  }
-
-//  def eval2ArgOp(a: Expression, b: Expression, op: (Double, Double) => Calculation) = {
-//    (a.eval, b.eval) match {
-//      case (y: Success, z: Success) => op(y.value, z.value)
-//      case (f: Failure, _) => f
-//      case (_, f: Failure) => f
-//    }
-//  }
