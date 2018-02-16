@@ -1,6 +1,6 @@
 package chapters.ex_6_2_7_2
 
-object Exercise extends App {
+object SeqExercise extends App {
 
   def minimum(seq: Seq[Int]): Int = {
 //    seq.fold(Int.MaxValue)((min, x) => if (x < min) x else min)
