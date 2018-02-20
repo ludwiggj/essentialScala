@@ -13,6 +13,10 @@ final case class Distribution[A](events: List[(A, Double)]) {
     Distribution(newEvents).compact.normalize
   }
 
+  def filter(p: ((A, Double)) => Boolean): Distribution[A] = {
+    Distribution.discrete(events.filter(p))
+  }
+
   def normalize: Distribution[A] = {
     val totalWeight = (events map { case (_, p) => p }).sum
     Distribution(events map { case (a, p) => a -> (p / totalWeight) })
@@ -33,6 +37,9 @@ object Distribution {
     val pct = 1.0 / l.size
     Distribution(l.map(elem => elem -> pct))
   }
+
+  def discrete[A](events: List[(A, Double)]): Distribution[A] =
+    Distribution(events).compact.normalize
 }
 
 object TestRun {
@@ -59,7 +66,9 @@ object TestRun {
     println(flatMappedD)
 
     assert(flatMappedD == Distribution(
-      List('a' -> 0.125, 'b' -> 0.125, 'c' -> 0.125, 'd' -> 0.125, 'e' -> 0.25, 'f' -> 0.25 ))
+      List('a' -> 0.125, 'b' -> 0.125, 'c' -> 0.125, 'd' -> 0.125, 'e' -> 0.25, 'f' -> 0.25))
     )
+
+    println(flatMappedD.filter { case (ch, _) => ch <= 'd' })
   }
 }
