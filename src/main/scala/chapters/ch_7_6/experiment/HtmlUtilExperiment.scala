@@ -1,4 +1,4 @@
-package chapters.ch_7_6
+package chapters.ch_7_6.experiment
 
 import chapters.ch_7_3.Person
 

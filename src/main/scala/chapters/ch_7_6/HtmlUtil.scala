@@ -4,7 +4,7 @@ import chapters.ch_7_3.Person
 
 // Type class interface pattern
 object HtmlWriter {
-  def apply[A](implicit writer: HtmlWriter[A]): HtmlWriter[A] = {
+  def apply[A](implicit writer: experiment.HtmlWriter[A]): experiment.HtmlWriter[A] = {
     writer
   }
 }
@@ -17,7 +17,7 @@ trait HtmlWriter[A] {
 object HtmlImplicit {
 
   implicit class HtmlOps[T](data: T) {
-    def toHtml(implicit writer: HtmlWriter[T]) =
+    def toHtml(implicit writer: experiment.HtmlWriter[T]) =
       writer.write(data)
   }
 
@@ -26,7 +26,7 @@ object HtmlImplicit {
 object RockItImplicitly {
   def writePerson() = {
     // Type class instance
-    implicit object PersonWriter extends HtmlWriter[Person] {
+    implicit object PersonWriter extends experiment.HtmlWriter[Person] {
       def write(person: Person) = s"<span>${person.name} &lt;${person.email}&gt;</span>"
     }
 
@@ -40,7 +40,7 @@ object RockItImplicitly {
     // Add an implicit class with a method that itself defines an implicit parameter, HtmlOps
     // Defined in outer scope above so it can be reused
 
-    import HtmlImplicit._
+    import chapters.ch_7_6.experiment.HtmlImplicit._
 
     // We can now invoke our type-class pattern (i.e. toHtml method) on any type for which we have an adapter, as if
     // it were a built-in feature of the class:
@@ -50,14 +50,14 @@ object RockItImplicitly {
 
   def writeApproximately() = {
     // Type class instance
-    implicit object ApproximationWriter extends HtmlWriter[Int] {
+    implicit object ApproximationWriter extends experiment.HtmlWriter[Int] {
       def write(in: Int): String =
         s"It's definitely less than ${((in / 10) + 1) * 10}"
     }
 
     // println(HtmlWriter[Int].write(2))
 
-    import HtmlImplicit._
+    import chapters.ch_7_6.experiment.HtmlImplicit._
 
     println(2.toHtml)
   }
